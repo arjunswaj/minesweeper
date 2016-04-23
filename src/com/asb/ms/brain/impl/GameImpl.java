@@ -52,17 +52,17 @@ public class GameImpl implements Game {
     public void flagCell(String input) throws InvalidCellException {
         inputValidator.validateCell(input, gameData);
         Cell cell = inputParser.parseCell(input);
-        gameData.getCells()[cell.getX()][cell.getY()] = "f";
+        gameData.getCells()[cell.getX()][cell.getY()] = FLAG;
     }
 
     @Override
     public void openCell(String input) throws InvalidCellException {
         inputValidator.validateCell(input, gameData);
         Cell cell = inputParser.parseCell(input);
-        if ("m".equals(gameData.getGame()[cell.getX()][cell.getY()])) {
+        if (MINE.equals(gameData.getGame()[cell.getX()][cell.getY()])) {
             gameData.setCurrentState(GameState.LOST);
         } else {
-            gameData.getCells()[cell.getX()][cell.getY()] = "0";
+            gameData.getCells()[cell.getX()][cell.getY()] = OPEN;
         }
     }
 
@@ -81,8 +81,8 @@ public class GameImpl implements Game {
     }
 
     private int numberOfFreeCells() {
-        int totalCells = getCount(gameData.getGame(), "x");
-        int occupiedCells = getCount(gameData.getCells(), "0");
+        int totalCells = getCount(gameData.getGame(), FREE_CELL);
+        int occupiedCells = getCount(gameData.getCells(), OPEN);
         return totalCells - occupiedCells;
     }
 
@@ -105,10 +105,10 @@ public class GameImpl implements Game {
         for (String[] rows : this.gameData.getCells()) {
             int c = 0;
             for (String cell : rows) {
-                if ("m".equals(cell)) {
-                    sb.append("x");
+                if (MINE.equals(cell)) {
+                    sb.append(FREE_CELL);
                 } else {
-                    if ("0".equals(cell)) {
+                    if (OPEN.equals(cell)) {
                         sb.append(getHints(r, c));
                     } else {
                         sb.append(cell);
@@ -124,26 +124,26 @@ public class GameImpl implements Game {
 
     private String getHints(int r, int c) {
         int count = 0;
-        count = isTopAMine(r, c) ? count + 1 : count;
-        count = isBottomAMine(r, c) ? count + 1 : count;
-        count = isLeftAMine(r, c) ? count + 1 : count;
-        count = isRightAMine(r, c) ? count + 1 : count;
+        count = checkTop(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
+        count = checkBottom(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
+        count = checkLeft(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
+        count = checkRight(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
         return String.valueOf(count);
     }
 
-    private boolean isTopAMine(int r, int c) {
-        return (r - 1) >= 0 && "m".equals(this.gameData.getGame()[r - 1][c]);
+    private boolean checkTop(String[][] data, String key, int r, int c) {
+        return (r - 1) >= 0 && key.equals(data[r - 1][c]);
     }
 
-    private boolean isBottomAMine(int r, int c) {
-        return (r + 1) < this.gameData.getGame().length && "m".equals(this.gameData.getGame()[r + 1][c]);
+    private boolean checkBottom(String[][] data, String key, int r, int c) {
+        return (r + 1) < data.length && key.equals(data[r + 1][c]);
     }
 
-    private boolean isLeftAMine(int r, int c) {
-        return (c - 1) >= 0 && "m".equals(this.gameData.getGame()[r][c - 1]);
+    private boolean checkLeft(String[][] data, String key, int r, int c) {
+        return (c - 1) >= 0 && key.equals(data[r][c - 1]);
     }
 
-    private boolean isRightAMine(int r, int c) {
-        return (c + 1) < this.gameData.getGame()[0].length && "m".equals(this.gameData.getGame()[r][c + 1]);
+    private boolean checkRight(String[][] data, String key, int r, int c) {
+        return (c + 1) < data[0].length && key.equals(data[r][c + 1]);
     }
 }
