@@ -100,6 +100,50 @@ public class GameImpl implements Game {
 
     @Override
     public String getGameData() {
-        return gameData.displayGame();
+        StringBuilder sb = new StringBuilder();
+        int r = 0;
+        for (String[] rows : this.gameData.getCells()) {
+            int c = 0;
+            for (String cell : rows) {
+                if ("m".equals(cell)) {
+                    sb.append("x");
+                } else {
+                    if ("0".equals(cell)) {
+                        sb.append(getHints(r, c));
+                    } else {
+                        sb.append(cell);
+                    }
+                }
+                c += 1;
+            }
+            sb.append("\n");
+            r += 1;
+        }
+        return sb.toString();
+    }
+
+    private String getHints(int r, int c) {
+        int count = 0;
+        count = isTopAMine(r, c) ? count + 1 : count;
+        count = isBottomAMine(r, c) ? count + 1 : count;
+        count = isLeftAMine(r, c) ? count + 1 : count;
+        count = isRightAMine(r, c) ? count + 1 : count;
+        return String.valueOf(count);
+    }
+
+    private boolean isTopAMine(int r, int c) {
+        return (r - 1) >= 0 && "m".equals(this.gameData.getGame()[r - 1][c]);
+    }
+
+    private boolean isBottomAMine(int r, int c) {
+        return (r + 1) < this.gameData.getGame().length && "m".equals(this.gameData.getGame()[r + 1][c]);
+    }
+
+    private boolean isLeftAMine(int r, int c) {
+        return (c - 1) >= 0 && "m".equals(this.gameData.getGame()[r][c - 1]);
+    }
+
+    private boolean isRightAMine(int r, int c) {
+        return (c + 1) < this.gameData.getGame()[0].length && "m".equals(this.gameData.getGame()[r][c + 1]);
     }
 }
