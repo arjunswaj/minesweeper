@@ -10,6 +10,8 @@ import com.asb.ms.model.Cell;
 import com.asb.ms.model.GameData;
 import com.asb.ms.parser.InputParser;
 import com.asb.ms.parser.impl.InputParserImpl;
+import com.asb.ms.util.CellUtilImpl;
+import com.asb.ms.util.impl.CellUtil;
 import com.asb.ms.validator.InputValidator;
 import com.asb.ms.validator.impl.InputValidatorImpl;
 
@@ -27,10 +29,12 @@ public class GameImpl implements Game {
     private InputValidator inputValidator;
     private InputParser inputParser;
     private GameData gameData;
+    private CellUtil cellUtil;
 
     public GameImpl(String gameDataString) throws InvalidGameException {
         inputValidator = new InputValidatorImpl();
         inputParser = new InputParserImpl();
+        cellUtil = new CellUtilImpl();
         initialiseGame(gameDataString);
     }
 
@@ -73,12 +77,12 @@ public class GameImpl implements Game {
                 Cell head = queue.remove();
                 gameData.getCells()[head.getX()][head.getY()] = ZERO;
                 queue.addAll(Arrays.asList(
-                        this.getTopCell(head),
-                        this.getBottomCell(head),
-                        this.getLeftCell(head),
-                        this.getRightCell(head))
+                        cellUtil.getTopCell(head),
+                        cellUtil.getBottomCell(head),
+                        cellUtil.getLeftCell(head),
+                        cellUtil.getRightCell(head))
                         .stream()
-                        .filter(c -> isValidCurrent(gameData.getCells(), c))
+                        .filter(c -> cellUtil.isValidCurrent(gameData.getCells(), c))
                         .filter(c -> !MINE.equals(gameData.getCells()[c.getX()][c.getY()]))
                         .filter(c -> ZERO.equals(getHints(c)))
                         .filter(c -> !gameData.getCells()[c.getX()][c.getY()].equals(ZERO))
@@ -149,66 +153,11 @@ public class GameImpl implements Game {
 
     private String getHints(int r, int c) {
         int count = 0;
-        count = checkTop(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
-        count = checkBottom(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
-        count = checkLeft(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
-        count = checkRight(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
+        count = cellUtil.checkTop(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
+        count = cellUtil.checkBottom(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
+        count = cellUtil.checkLeft(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
+        count = cellUtil.checkRight(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
         return String.valueOf(count);
     }
 
-    private boolean isValidCurrent(String[][] data, Cell cell) {
-        return isValidCurrent(data, cell.getX(), cell.getY());
-    }
-
-    private boolean isValidCurrent(String[][] data, int x, int y) {
-        return x >= 0 && x < data[0].length && y >= 0 && y < data.length;
-    }
-
-    private boolean checkTop(String[][] data, String key, int r, int c) {
-        return (r - 1) >= 0 && key.equals(data[r - 1][c]);
-    }
-
-    private boolean checkBottom(String[][] data, String key, int r, int c) {
-        return (r + 1) < data.length && key.equals(data[r + 1][c]);
-    }
-
-    private boolean checkLeft(String[][] data, String key, int r, int c) {
-        return (c - 1) >= 0 && key.equals(data[r][c - 1]);
-    }
-
-    private boolean checkRight(String[][] data, String key, int r, int c) {
-        return (c + 1) < data[0].length && key.equals(data[r][c + 1]);
-    }
-
-    private Cell getTopCell(Cell cell) {
-        return this.getTopCell(cell.getX(), cell.getY());
-    }
-
-    private Cell getTopCell(int r, int c) {
-        return new Cell(r - 1, c);
-    }
-
-    private Cell getBottomCell(int r, int c) {
-        return new Cell(r + 1, c);
-    }
-
-    private Cell getBottomCell(Cell cell) {
-        return this.getBottomCell(cell.getX(), cell.getY());
-    }
-
-    private Cell getLeftCell(int r, int c) {
-        return new Cell(r, c - 1);
-    }
-
-    private Cell getLeftCell(Cell cell) {
-        return this.getLeftCell(cell.getX(), cell.getY());
-    }
-
-    private Cell getRightCell(int r, int c) {
-        return new Cell(r, c + 1);
-    }
-
-    private Cell getRightCell(Cell cell) {
-        return this.getRightCell(cell.getX(), cell.getY());
-    }
 }
