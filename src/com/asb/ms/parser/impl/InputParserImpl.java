@@ -15,7 +15,7 @@ public class InputParserImpl implements InputParser {
     @Override
     public String[][] parseGame(String gameDataString) {
         StringTokenizer st = new StringTokenizer(gameDataString, ",");
-        String[][] gameData = new String[st.countTokens()][st.countTokens()];
+        String[][] gameData = new String[st.countTokens()][gameDataString.indexOf(",")];
         int row = 0;
         while (st.hasMoreTokens()) {
             String rowData = st.nextToken();
