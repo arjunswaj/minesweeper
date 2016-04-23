@@ -12,7 +12,7 @@ public interface Game {
 
     String MINE = "m";
     String FLAG = "f";
-    String OPEN = "0";
+    String ZERO = "0";
     String FREE_CELL = "x";
 
     void doOperation(String input) throws InvalidOperationException, InvalidCellException;

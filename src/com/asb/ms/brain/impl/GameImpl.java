@@ -13,6 +13,11 @@ import com.asb.ms.parser.impl.InputParserImpl;
 import com.asb.ms.validator.InputValidator;
 import com.asb.ms.validator.impl.InputValidatorImpl;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.stream.Collectors;
+
 /**
  * Implementation of Game.
  * Created by arjun on 23/04/16.
@@ -62,7 +67,23 @@ public class GameImpl implements Game {
         if (MINE.equals(gameData.getGame()[cell.getX()][cell.getY()])) {
             gameData.setCurrentState(GameState.LOST);
         } else {
-            gameData.getCells()[cell.getX()][cell.getY()] = OPEN;
+            Queue<Cell> queue = new LinkedList<>();
+            queue.add(cell);
+            while (!queue.isEmpty()) {
+                Cell head = queue.remove();
+                gameData.getCells()[head.getX()][head.getY()] = ZERO;
+                queue.addAll(Arrays.asList(
+                        this.getTopCell(head),
+                        this.getBottomCell(head),
+                        this.getLeftCell(head),
+                        this.getRightCell(head))
+                        .stream()
+                        .filter(c -> isValidCurrent(gameData.getCells(), c))
+                        .filter(c -> !MINE.equals(gameData.getCells()[c.getX()][c.getY()]))
+                        .filter(c -> ZERO.equals(getHints(c)))
+                        .filter(c -> !gameData.getCells()[c.getX()][c.getY()].equals(ZERO))
+                        .collect(Collectors.toList()));
+            }
         }
     }
 
@@ -82,7 +103,7 @@ public class GameImpl implements Game {
 
     private int numberOfFreeCells() {
         int totalCells = getCount(gameData.getGame(), FREE_CELL);
-        int occupiedCells = getCount(gameData.getCells(), OPEN);
+        int occupiedCells = getCount(gameData.getCells(), ZERO);
         return totalCells - occupiedCells;
     }
 
@@ -108,7 +129,7 @@ public class GameImpl implements Game {
                 if (MINE.equals(cell)) {
                     sb.append(FREE_CELL);
                 } else {
-                    if (OPEN.equals(cell)) {
+                    if (ZERO.equals(cell)) {
                         sb.append(getHints(r, c));
                     } else {
                         sb.append(cell);
@@ -122,6 +143,10 @@ public class GameImpl implements Game {
         return sb.toString();
     }
 
+    private String getHints(Cell cell) {
+        return this.getHints(cell.getX(), cell.getY());
+    }
+
     private String getHints(int r, int c) {
         int count = 0;
         count = checkTop(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
@@ -129,6 +154,14 @@ public class GameImpl implements Game {
         count = checkLeft(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
         count = checkRight(this.gameData.getGame(), MINE, r, c) ? count + 1 : count;
         return String.valueOf(count);
+    }
+
+    private boolean isValidCurrent(String[][] data, Cell cell) {
+        return isValidCurrent(data, cell.getX(), cell.getY());
+    }
+
+    private boolean isValidCurrent(String[][] data, int x, int y) {
+        return x >= 0 && x < data[0].length && y >= 0 && y < data.length;
     }
 
     private boolean checkTop(String[][] data, String key, int r, int c) {
@@ -145,5 +178,37 @@ public class GameImpl implements Game {
 
     private boolean checkRight(String[][] data, String key, int r, int c) {
         return (c + 1) < data[0].length && key.equals(data[r][c + 1]);
+    }
+
+    private Cell getTopCell(Cell cell) {
+        return this.getTopCell(cell.getX(), cell.getY());
+    }
+
+    private Cell getTopCell(int r, int c) {
+        return new Cell(r - 1, c);
+    }
+
+    private Cell getBottomCell(int r, int c) {
+        return new Cell(r + 1, c);
+    }
+
+    private Cell getBottomCell(Cell cell) {
+        return this.getBottomCell(cell.getX(), cell.getY());
+    }
+
+    private Cell getLeftCell(int r, int c) {
+        return new Cell(r, c - 1);
+    }
+
+    private Cell getLeftCell(Cell cell) {
+        return this.getLeftCell(cell.getX(), cell.getY());
+    }
+
+    private Cell getRightCell(int r, int c) {
+        return new Cell(r, c + 1);
+    }
+
+    private Cell getRightCell(Cell cell) {
+        return this.getRightCell(cell.getX(), cell.getY());
     }
 }
